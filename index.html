@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Clicker Basti</title>
+
+<style>
+body {
+    background-image: url("fondopipe.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 20px;
+}
+
+#contador {
+    font-size: 70px;
+    margin: 20px;
+}
+
+#poder, #pps {
+    font-size: 25px;
+    margin: 10px;
+}
+
+#clicker {
+    width: 300px;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+#clicker:hover {
+    transform: scale(1.05);
+}
+
+.tienda {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255,255,255,0.25);
+    border: 3px solid black;
+    border-radius: 15px;
+    padding: 15px;
+    width: 260px;
+}
+
+.tienda button {
+    width: 100%;
+    margin: 5px 0;
+}
+
+#reiniciar {
+    margin-top: 20px;
+    padding: 10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 Clicker Basti</h1>
+
+<div id="contador">0</div>
+
+<div id="poder">Puntos por clic: 1</div>
+<div id="pps">Puntos por segundo: 1</div>
+
+<img
+    id="clicker"
+    src="bastinormal.jpg"
+    onclick="sumarClick()"
+>
+
+<br>
+
+<button id="reiniciar" onclick="reiniciarJuego()">
+    🔄 Reiniciar progreso
+</button>
+
+<div class="tienda">
+
+    <h2>🏪 Tienda</h2>
+
+    <button onclick="mejorarClick()">
+        Mejorar clic (+1)
+        <br>
+        Costo: <span id="costoClick">100</span>
+    </button>
+
+    <button onclick="mejorarAuto()">
+        Mejorar auto (+1/s)
+        <br>
+        Costo: <span id="costoAuto">150</span>
+    </button>
+
+    <button onclick="comprarMejoraFija(500,5)">
+        +5 por clic (500)
+    </button>
+
+    <button onclick="comprarMejoraFija(800,8)">
+        +8 por clic (800)
+    </button>
+
+    <button onclick="comprarMejoraFija(1500,15)">
+        +15 por clic (1500)
+    </button>
+
+    <button onclick="comprarMejoraFija(3000,30)">
+        +30 por clic (3000)
+    </button>
+
+</div>
+
+<script>
+
+let puntos = 0;
+let poderClick = 1;
+let puntosPorSegundo = 1;
+
+let costoClick = 100;
+let costoAuto = 150;
+
+function formatear(numero) {
+    if (numero >= 1000000000) return (numero / 1000000000).toFixed(1) + "B";
+    if (numero >= 1000000) return (numero / 1000000).toFixed(1) + "M";
+    if (numero >= 1000) return (numero / 1000).toFixed(1) + "K";
+    return Math.floor(numero);
+}
+
+function actualizarImagen() {
+
+    const img = document.getElementById("clicker");
+
+    if (puntos >= 50000) {
+        img.src = "bastidios.jpg";
+    }
+    else if (puntos >= 20000) {
+        img.src = "bastidiamante.jpg";
+    }
+    else if (puntos >= 5000) {
+        img.src = "bastioro.jpg";
+    }
+    else if (puntos >= 1000) {
+        img.src = "bastiplata.jpg";
+    }
+    else {
+        img.src = "bastinormal.jpg";
+    }
+}
+
+function actualizar() {
+
+    document.getElementById("contador").textContent = formatear(puntos);
+
+    document.getElementById("poder").textContent =
+        "Puntos por clic: " + poderClick;
+
+    document.getElementById("pps").textContent =
+        "Puntos por segundo: " + puntosPorSegundo;
+
+    document.getElementById("costoClick").textContent = costoClick;
+    document.getElementById("costoAuto").textContent = costoAuto;
+
+    actualizarImagen();
+}
+
+function sumarClick() {
+    puntos += poderClick;
+    actualizar();
+}
+
+function mejorarClick() {
+
+    if (puntos >= costoClick) {
+
+        puntos -= costoClick;
+        poderClick += 1;
+
+        costoClick = Math.floor(costoClick * 1.5);
+
+        actualizar();
+    }
+}
+
+function mejorarAuto() {
+
+    if (puntos >= costoAuto) {
+
+        puntos -= costoAuto;
+        puntosPorSegundo += 1;
+
+        costoAuto = Math.floor(costoAuto * 1.5);
+
+        actualizar();
+    }
+}
+
+function comprarMejoraFija(costo, aumento) {
+
+    if (puntos >= costo) {
+
+        puntos -= costo;
+        poderClick += aumento;
+
+        actualizar();
+    }
+}
+
+function guardar() {
+
+    localStorage.setItem("puntos", puntos);
+    localStorage.setItem("poderClick", poderClick);
+    localStorage.setItem("puntosPorSegundo", puntosPorSegundo);
+    localStorage.setItem("costoClick", costoClick);
+    localStorage.setItem("costoAuto", costoAuto);
+}
+
+function cargar() {
+
+    puntos = Number(localStorage.getItem("puntos")) || 0;
+    poderClick = Number(localStorage.getItem("poderClick")) || 1;
+    puntosPorSegundo = Number(localStorage.getItem("puntosPorSegundo")) || 1;
+
+    costoClick = Number(localStorage.getItem("costoClick")) || 100;
+    costoAuto = Number(localStorage.getItem("costoAuto")) || 150;
+
+    actualizar();
+}
+
+function reiniciarJuego() {
+
+    if (confirm("¿Seguro que quieres borrar todo tu progreso?")) {
+
+        localStorage.clear();
+
+        puntos = 0;
+        poderClick = 1;
+        puntosPorSegundo = 1;
+
+        costoClick = 100;
+        costoAuto = 150;
+
+        actualizar();
+    }
+}
+
+cargar();
+
+setInterval(() => {
+    puntos += puntosPorSegundo;
+    actualizar();
+}, 1000);
+
+setInterval(guardar, 5000);
+
+actualizar();
+
+</script>
+
+</body>
+</html>
